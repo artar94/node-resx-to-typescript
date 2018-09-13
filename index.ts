@@ -3,6 +3,7 @@ declare const require: any;
 
 const addTypeScriptFile = require('add-typescript-file-to-project');
 const fs = require('fs');
+const path = require('path');
 const mkpath = require('mkpath');
 const search = require('recursive-search');
 const xml2js = require('xml2js');
@@ -59,7 +60,7 @@ export function execute(typeScriptResourcesNamespace: string, virtualResxFolder:
 
     function convertXmlToTypeScriptModelFile(xmlObject: any, resxFilename: string, typeScriptResourcesNamespace: string, virtualTypeScriptFolder: string): void {
         const projectRoot = getProjectRoot();
-        const relativeResxFilename = resxFilename.replace(projectRoot, "").replace(/\\/g, "/");
+        const relativeResxFilename = path.relative(projectRoot, resxFilename).replace(/\\/g, "/");
         const className = resxFilename.substr(resxFilename.lastIndexOf("\\") + 1).replace('.resx', '');
         const resources: Array<any> = [];
         let content = '// TypeScript Resx model for: ' + relativeResxFilename + '\n' + 
@@ -88,7 +89,6 @@ export function execute(typeScriptResourcesNamespace: string, virtualResxFolder:
         
         // Write model if resources found
         if (resources.length > 0) {
-            const relativeTsFilename = relativeResxFilename.replace('.resx', '.ts');
             const tsFileName = resxFilename.replace('.resx', '.ts');
             
             if (virtualTypeScriptFolder === undefined || virtualTypeScriptFolder === '')
