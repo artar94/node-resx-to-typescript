@@ -7,7 +7,7 @@ const mkpath = require('mkpath');
 const search = require('recursive-search');
 const xml2js = require('xml2js');
 
-export function execute(typeScriptResourcesNamespace: string, virtualResxFolder: string, virtualTypeScriptFolder: string): void {
+export function execute(typeScriptResourcesNamespace: string, virtualResxFolder: string, virtualTypeScriptFolder: string, skipAddingFiles?: boolean): void {
     let files: any = null;
     const virtualProjectRoot = '\\..\\..\\..\\';
 
@@ -40,24 +40,24 @@ export function execute(typeScriptResourcesNamespace: string, virtualResxFolder:
         {   
             const resxFilename = splittedFiles[i].trim().replace(/"/g,"").replace(/\\\\/g,"\\");
             
-            convertResxToTypeScriptModel(resxFilename, typeScriptResourcesNamespace, virtualTypeScriptFolder);
+            convertResxToTypeScriptModel(resxFilename, typeScriptResourcesNamespace, virtualTypeScriptFolder, skipAddingFiles);
         }
     }
     
-    function convertResxToTypeScriptModel(resxFilename: string, typeScriptResourcesNamespace: string, virtualTypeScriptFolder: string): void {
+    function convertResxToTypeScriptModel(resxFilename: string, typeScriptResourcesNamespace: string, virtualTypeScriptFolder: string, skipAddingFiles: boolean): void {
         fs.readFile(resxFilename, function(err: any, data: any) {
             const parser = new xml2js.Parser();
 
             parser.parseString(data, function (err: any, result: any) {
                  if (result !== undefined)
                  {
-                     convertXmlToTypeScriptModelFile(result, resxFilename, typeScriptResourcesNamespace, virtualTypeScriptFolder);                       
+                     convertXmlToTypeScriptModelFile(result, resxFilename, typeScriptResourcesNamespace, virtualTypeScriptFolder, skipAddingFiles);                       
                  }
             });  
         });    
     }
 
-    function convertXmlToTypeScriptModelFile(xmlObject: any, resxFilename: string, typeScriptResourcesNamespace: string, virtualTypeScriptFolder: string): void {
+    function convertXmlToTypeScriptModelFile(xmlObject: any, resxFilename: string, typeScriptResourcesNamespace: string, virtualTypeScriptFolder: string, skipAddingFiles: boolean): void {
         const projectRoot = getProjectRoot();
         const relativeResxFilename = resxFilename.replace(projectRoot, "").replace(/\\/g, "/");
         const className = resxFilename.substr(resxFilename.lastIndexOf("\\") + 1).replace('.resx', '');
@@ -96,7 +96,7 @@ export function execute(typeScriptResourcesNamespace: string, virtualResxFolder:
                 // Write the file aside of the the resx file.
                 fs.writeFileSync(tsFileName, content, null);                           
 
-                addTypeScriptFile.execute(tsFileName);                          
+                if (!skipAddingFiles) addTypeScriptFile.execute(tsFileName);                          
             }
             else
             {
@@ -109,7 +109,7 @@ export function execute(typeScriptResourcesNamespace: string, virtualResxFolder:
                 
                 fs.writeFileSync(outputFileName, content, null); 
                 
-                addTypeScriptFile.execute(relativeOutputFileName);                          
+                if (!skipAddingFiles) addTypeScriptFile.execute(relativeOutputFileName);                          
             }
         }
     }
