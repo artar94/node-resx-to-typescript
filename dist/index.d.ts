@@ -1,1 +1,1 @@
-export declare function execute(typeScriptResourcesNamespace: string, virtualResxFolder: string, virtualTypeScriptFolder: string): void;
+export declare function execute(typeScriptResourcesNamespace: string, virtualResxFolder: string, virtualTypeScriptFolder: string, skipAddingFiles?: boolean): void;

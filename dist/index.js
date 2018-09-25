@@ -5,7 +5,7 @@ var path = require('path');
 var mkpath = require('mkpath');
 var search = require('recursive-search');
 var xml2js = require('xml2js');
-function execute(typeScriptResourcesNamespace, virtualResxFolder, virtualTypeScriptFolder) {
+function execute(typeScriptResourcesNamespace, virtualResxFolder, virtualTypeScriptFolder, skipAddingFiles) {
     var files = null;
     var virtualProjectRoot = '\\..\\..\\..\\';
     if (virtualResxFolder === undefined || virtualResxFolder === '') {
@@ -27,20 +27,20 @@ function execute(typeScriptResourcesNamespace, virtualResxFolder, virtualTypeScr
         var splittedFiles = filesAsString.split(',');
         for (var i = 0, length_1 = splittedFiles.length; i < length_1; i++) {
             var resxFilename = splittedFiles[i].trim().replace(/"/g, "").replace(/\\\\/g, "\\");
-            convertResxToTypeScriptModel(resxFilename, typeScriptResourcesNamespace, virtualTypeScriptFolder);
+            convertResxToTypeScriptModel(resxFilename, typeScriptResourcesNamespace, virtualTypeScriptFolder, skipAddingFiles);
         }
     }
-    function convertResxToTypeScriptModel(resxFilename, typeScriptResourcesNamespace, virtualTypeScriptFolder) {
+    function convertResxToTypeScriptModel(resxFilename, typeScriptResourcesNamespace, virtualTypeScriptFolder, skipAddingFiles) {
         fs.readFile(resxFilename, function (err, data) {
             var parser = new xml2js.Parser();
             parser.parseString(data, function (err, result) {
                 if (result !== undefined) {
-                    convertXmlToTypeScriptModelFile(result, resxFilename, typeScriptResourcesNamespace, virtualTypeScriptFolder);
+                    convertXmlToTypeScriptModelFile(result, resxFilename, typeScriptResourcesNamespace, virtualTypeScriptFolder, skipAddingFiles);
                 }
             });
         });
     }
-    function convertXmlToTypeScriptModelFile(xmlObject, resxFilename, typeScriptResourcesNamespace, virtualTypeScriptFolder) {
+    function convertXmlToTypeScriptModelFile(xmlObject, resxFilename, typeScriptResourcesNamespace, virtualTypeScriptFolder, skipAddingFiles) {
         var projectRoot = getProjectRoot();
         var relativeResxFilename = path.relative(projectRoot, resxFilename).replace(/\\/g, "/");
         var className = resxFilename.substr(resxFilename.lastIndexOf("\\") + 1).replace('.resx', '').replace('.', '_');
@@ -71,7 +71,8 @@ function execute(typeScriptResourcesNamespace, virtualResxFolder, virtualTypeScr
             if (virtualTypeScriptFolder === undefined || virtualTypeScriptFolder === '') {
                 // Write the file aside of the the resx file.
                 fs.writeFileSync(tsFileName, content, null);
-                addTypeScriptFile.execute(tsFileName);
+                if (!skipAddingFiles)
+                    addTypeScriptFile.execute(tsFileName);
             }
             else {
                 // Write the file to the given output folder.
@@ -80,7 +81,8 @@ function execute(typeScriptResourcesNamespace, virtualResxFolder, virtualTypeScr
                 var relativeOutputFileName = virtualTypeScriptFolder + '/' + tsFileNameWithoutPath;
                 mkpath.sync(projectRoot + virtualTypeScriptFolder, '0700');
                 fs.writeFileSync(outputFileName, content, null);
-                addTypeScriptFile.execute(relativeOutputFileName);
+                if (!skipAddingFiles)
+                    addTypeScriptFile.execute(relativeOutputFileName);
             }
         }
     }
