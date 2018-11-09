@@ -89,7 +89,7 @@ export function execute(typeScriptResourcesNamespace: string, virtualResxFolder:
             if (!skipFieldType) content += 'public ';
             content += decapitalizeFirstLetter(resources[j].name)
             if (!skipFieldType) content += ': string';
-            content += ' = `' + resources[j].value + '`;\n';
+            content += ' = `' + resources[j].value + '`;' + newLine;
         }
 
         content += '   }' + newLine;
