@@ -17,7 +17,8 @@
     "add-typescript-file-to-project": "1.0.1",
     "mkpath": "*",
     "recursive-search": "*",
-    "xml2js": "*"
+    "xml2js": "*",
+    "camelcase": "*"
   },
   "repository": {
     "type": "git",
