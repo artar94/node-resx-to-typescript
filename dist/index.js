@@ -6,7 +6,7 @@ var mkpath = require('mkpath');
 var search = require('recursive-search');
 var xml2js = require('xml2js');
 var changeCase = require('change-case');
-function execute(typeScriptResourcesNamespace, virtualResxFolder, virtualTypeScriptFolder, skipAddingFiles) {
+function execute(typeScriptResourcesNamespace, virtualResxFolder, virtualTypeScriptFolder, skipAddingFiles, skipFieldType) {
     var files = null;
     var virtualProjectRoot = '\\..\\..\\..\\';
     if (virtualResxFolder === undefined || virtualResxFolder === '') {
@@ -28,20 +28,20 @@ function execute(typeScriptResourcesNamespace, virtualResxFolder, virtualTypeScr
         var splittedFiles = filesAsString.split(',');
         for (var i = 0, length_1 = splittedFiles.length; i < length_1; i++) {
             var resxFilename = splittedFiles[i].trim().replace(/"/g, "").replace(/\\\\/g, "\\");
-            convertResxToTypeScriptModel(resxFilename, typeScriptResourcesNamespace, virtualTypeScriptFolder, skipAddingFiles);
+            convertResxToTypeScriptModel(resxFilename, typeScriptResourcesNamespace, virtualTypeScriptFolder, skipAddingFiles, skipFieldType);
         }
     }
-    function convertResxToTypeScriptModel(resxFilename, typeScriptResourcesNamespace, virtualTypeScriptFolder, skipAddingFiles) {
+    function convertResxToTypeScriptModel(resxFilename, typeScriptResourcesNamespace, virtualTypeScriptFolder, skipAddingFiles, skipFieldType) {
         fs.readFile(resxFilename, function (err, data) {
             var parser = new xml2js.Parser();
             parser.parseString(data, function (err, result) {
                 if (result !== undefined) {
-                    convertXmlToTypeScriptModelFile(result, resxFilename, typeScriptResourcesNamespace, virtualTypeScriptFolder, skipAddingFiles);
+                    convertXmlToTypeScriptModelFile(result, resxFilename, typeScriptResourcesNamespace, virtualTypeScriptFolder, skipAddingFiles, skipFieldType);
                 }
             });
         });
     }
-    function convertXmlToTypeScriptModelFile(xmlObject, resxFilename, typeScriptResourcesNamespace, virtualTypeScriptFolder, skipAddingFiles) {
+    function convertXmlToTypeScriptModelFile(xmlObject, resxFilename, typeScriptResourcesNamespace, virtualTypeScriptFolder, skipAddingFiles, skipFieldType) {
         var projectRoot = getProjectRoot();
         var relativeResxFilename = path.relative(projectRoot, resxFilename).replace(/\\/g, "/");
         var className = changeCase.pascalCase(resxFilename.substr(resxFilename.lastIndexOf("\\") + 1).replace('.resx', ''));
@@ -60,7 +60,13 @@ function execute(typeScriptResourcesNamespace, virtualResxFolder, virtualTypeScr
             }
         }
         for (var j = 0, nrOfResources = resources.length; j < nrOfResources; j++) {
-            content = content + '       public ' + decapitalizeFirstLetter(resources[j].name) + ': string = `' + resources[j].value + '`;\n';
+            content += '       ';
+            if (!skipFieldType)
+                content += 'public ';
+            content += decapitalizeFirstLetter(resources[j].name);
+            if (!skipFieldType)
+                content += ': string';
+            content += ' = `' + resources[j].value + '`;\n';
         }
         content = content + '   }\n';
         if (typeScriptResourcesNamespace) {
