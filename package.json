@@ -18,7 +18,7 @@
     "mkpath": "*",
     "recursive-search": "*",
     "xml2js": "*",
-    "camelcase": "*"
+    "change-case": "*"
   },
   "repository": {
     "type": "git",
